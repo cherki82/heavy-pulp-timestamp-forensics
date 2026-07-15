@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-from pathlib import Path
+import csv
 import html
 import re
+from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
@@ -31,12 +32,19 @@ def evidence_path(value: str) -> str:
     return f"evidence/{match.group(1)}"
 
 
+def png_dimensions(path: str) -> tuple[int, int]:
+    with (ROOT / path).open("rb") as image_file:
+        image_file.seek(16)
+        return tuple(int.from_bytes(image_file.read(4), "big") for _ in range(2))
+
+
 def event_cards(kind: str, original_rows: list[list[str]], provo_rows: list[list[str]]) -> str:
     cards = []
     for source, converted in zip(original_rows, provo_rows, strict=True):
         number = int(source[0])
         negative = "negative" in source[5]
         image = evidence_path(source[-1])
+        image_width, image_height = png_dimensions(image)
         if kind == "sustained":
             details = f"""
               <dl class="facts">
@@ -67,7 +75,7 @@ def event_cards(kind: str, original_rows: list[list[str]], provo_rows: list[list
               {details}
             </div>
             <figure class="strip">
-              <a href="{image}"><img loading="lazy" src="{image}" alt="Source-frame evidence strip for {kind} event {number}"></a>
+              <a href="{image}"><img loading="lazy" width="{image_width}" height="{image_height}" src="{image}" alt="Source-frame evidence strip for {kind} event {number}"></a>
               <figcaption>Original Sedona-time source pixels. Open for full resolution.</figcaption>
             </figure>
           </article>
@@ -81,6 +89,33 @@ transient_original = table_rows(ORIGINAL, "## Transient out-of-sequence glitches
 transient_provo = table_rows(PROVO, "## Transient out-of-sequence glitches", "## Final")
 assert len(sustained_original) == len(sustained_provo) == 100
 assert len(transient_original) == len(transient_provo) == 45
+
+
+def signed_seconds(value: str) -> int:
+    hours, minutes, seconds = map(int, re.search(r"(\d+):(\d+):(\d+)", value).groups())
+    return (-1 if value.startswith("−") else 1) * (hours * 3600 + minutes * 60 + seconds)
+
+
+assert sum(signed_seconds(row[5]) for row in sustained_original) == 68_896
+
+
+with (ROOT / "timestamp_event_data.csv").open("w", newline="") as data_file:
+    writer = csv.writer(data_file)
+    writer.writerow([
+        "event_type", "event_number", "video_position", "source_frames", "frame_duration",
+        "sedona_timestamp_sequence", "provo_timestamp_sequence", "classification",
+        "signed_gap_seconds", "signed_changes", "evidence_file",
+    ])
+    for source, converted in zip(sustained_original, sustained_provo, strict=True):
+        writer.writerow([
+            "sustained", source[0], source[1], source[2], "", clean(source[3]), clean(converted[3]),
+            clean(source[4]), signed_seconds(source[5]), clean(source[5]), evidence_path(source[-1]),
+        ])
+    for source, converted in zip(transient_original, transient_provo, strict=True):
+        writer.writerow([
+            "transient", source[0], source[1], source[2], clean(source[3]), clean(source[4]),
+            clean(converted[4]), "out-of-sequence reading", "", clean(source[5]), evidence_path(source[-1]),
+        ])
 
 gallery_files = [
     ("Both meridiem transitions", "ampm_transition_evidence.png"),
@@ -157,6 +192,7 @@ page = f"""<!doctype html>
     .downloads {{ display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 2rem; }}
     .button {{ padding: .75rem 1rem; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: 700 .74rem/1 var(--mono); text-decoration: none; text-transform: uppercase; }}
     .button:hover {{ border-color: var(--green); color: var(--green); }}
+    .button--primary {{ border-color: var(--green); color: var(--green); }}
     .event-list {{ display: grid; gap: 1rem; }}
     .event {{ display: grid; grid-template-columns: minmax(250px, 330px) minmax(0, 1fr); background: rgba(13,25,21,.9); border: 1px solid var(--line); border-left: 4px solid var(--green); scroll-margin-top: 4rem; }}
     .event--negative {{ border-left-color: var(--red); }}
@@ -168,9 +204,9 @@ page = f"""<!doctype html>
     .positive {{ color: var(--green); }} .negative {{ color: var(--red); }}
     .clock {{ margin: .65rem 0 0; font: .8rem/1.45 var(--mono); }}
     .clock--provo {{ color: var(--amber); }}
-    .strip {{ min-width: 0; margin: 0; padding: 1rem; overflow-x: auto; background: #050806; border-left: 1px solid var(--line); }}
-    .strip a {{ display: block; width: max-content; }}
-    .strip img {{ width: auto; max-width: none; height: clamp(205px, 26vw, 327px); border: 1px solid #26352e; }}
+    .strip {{ min-width: 0; margin: 0; padding: 1rem; background: #050806; border-left: 1px solid var(--line); }}
+    .strip a {{ display: block; width: 100%; }}
+    .strip img {{ width: 100%; max-width: 100%; height: auto; border: 1px solid #26352e; }}
     figcaption {{ margin-top: .55rem; color: var(--muted); font: .65rem/1.3 var(--mono); }}
     .audit-grid {{ display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem; }}
     .audit-grid figure {{ margin: 0; padding: 1rem; background: var(--panel); border: 1px solid var(--line); overflow: auto; }}
@@ -185,7 +221,6 @@ page = f"""<!doctype html>
       .hero-grid {{ grid-template-columns: 1fr 1fr; }}
       .event {{ grid-template-columns: 1fr; }}
       .strip {{ border-left: 0; border-top: 1px solid var(--line); }}
-      .strip img {{ height: 240px; }}
       .callout, .method-list {{ grid-template-columns: 1fr; }}
       .audit-grid {{ grid-template-columns: 1fr; }}
     }}
@@ -198,7 +233,7 @@ page = f"""<!doctype html>
     <div class="wrap">
       <p class="kicker">Forensic timestamp report · <cite>Heavy Pulp — Somewhere in Sedona</cite></p>
       <h1>Timestamp discontinuity analysis</h1>
-      <p class="lede">Frame-by-frame examination of 6,998 decoded frames identified 100 sustained clock discontinuities and 45 transient out-of-sequence readings. Each event is linked to source-frame evidence; Provo equivalents apply a one-hour historical time-zone conversion.</p>
+      <p class="lede">This report documents every timestamp jump found in 6,998 decoded frames: 100 sustained discontinuities and 45 transient out-of-sequence readings. The event ledgers pair each timestamp sequence with its exact source-frame evidence.</p>
       <div class="hero-grid" aria-label="Report summary">
         <div class="metric"><strong>6,998</strong><span>frames examined</span></div>
         <div class="metric"><strong>100</strong><span>sustained discontinuities</span></div>
@@ -208,13 +243,23 @@ page = f"""<!doctype html>
     </div>
   </header>
   <nav aria-label="Report sections"><div class="wrap">
-    <a href="#finding">Finding</a><a href="#method">Method</a><a href="#timezone">Time zones</a><a href="#pattern">Pattern analysis</a><a href="#sustained">100 sustained</a><a href="#transient">45 transient</a><a href="#ampm">AM/PM audit</a>
+    <a href="#sustained">100 sustained jumps</a><a href="#transient">45 transient glitches</a><a href="timestamp_event_data.csv" download>Download CSV</a><a href="#finding">Totals</a><a href="#method">Method</a><a href="#timezone">Time zones</a><a href="#ampm">AM/PM audit</a><a href="#pattern">Pattern analysis</a>
   </div></nav>
   <main id="content">
     <section id="finding"><div class="wrap">
       <p class="kicker">Calculated result</p><h2>Net signed discontinuity: 68,896 seconds.</h2>
       <div class="callout"><strong>+68,896s</strong><div><p>Positive sustained gaps total <code>+108,400 seconds</code>. Four backward jumps total <code>−39,504 seconds</code>. Applying the requested signed convention yields <code>+68,896 seconds</code>, or <code>19:08:16</code>.</p><p>This is a discontinuity total derived from displayed timestamps. It is not, by itself, proof that exactly the same duration of original recording was physically removed.</p></div></div>
-      <div class="downloads"><a class="button" href="reports/timestamp_forensic_report.md">Original Sedona-time report</a><a class="button" href="reports/timestamp_forensic_report_provo_ut.md">Provo-time duplicate</a><a class="button" href="evidence/ampm_frame_audit.txt">6,998-frame AM/PM ledger</a></div>
+      <div class="downloads"><a class="button button--primary" href="timestamp_event_data.csv" download>Download event data (CSV)</a><a class="button" href="reports/timestamp_forensic_report.md">Original Sedona-time report</a><a class="button" href="reports/timestamp_forensic_report_provo_ut.md">Provo-time duplicate</a><a class="button" href="evidence/ampm_frame_audit.txt">6,998-frame AM/PM ledger</a></div>
+    </div></section>
+    <section id="sustained"><div class="wrap">
+      <p class="kicker">Primary evidence · complete event ledger</p><h2>100 sustained timestamp jumps.</h2>
+      <p class="section-intro">Each card places the recorded timestamp sequence beside its supporting source frames. Abrupt boundaries show the last old frame and first new frame; cross-fades include the last unblended old state, transition imagery, and first unblended new state. Red rules mark backward time.</p>
+      <div class="event-list">{event_cards('sustained', sustained_original, sustained_provo)}</div>
+    </div></section>
+    <section id="transient"><div class="wrap">
+      <p class="kicker">Primary evidence · momentary anomalies</p><h2>45 transient timestamp glitches.</h2>
+      <p class="section-intro">These readings briefly move out of sequence and return. Each evidence strip includes the preceding frame, every anomalous frame, and the following frame. The set comprises 34 one-frame, nine two-frame, and two compound glitches.</p>
+      <div class="event-list">{event_cards('transient', transient_original, transient_provo)}</div>
     </div></section>
     <section id="method"><div class="wrap">
       <p class="kicker">Method and controls</p><h2>Frame-level review and verification.</h2>
@@ -232,24 +277,14 @@ page = f"""<!doctype html>
       <p class="kicker">Historical local time</p><h2>Provo conversion: add one hour.</h2>
       <div class="columns"><p>For September 10–11, 2001, Sedona used Mountain Standard Time (<code>UTC−07:00</code>) while Provo observed Mountain Daylight Time (<code>UTC−06:00</code>). Every camera-clock value therefore moves forward exactly one hour.</p><p>Frame numbers, elapsed video positions, event order, classifications, and signed gaps do not change. The evidence images remain immutable source extractions and display the original Sedona time; each card supplies the Provo equivalent in amber.</p><p>The source date reads <code>SEP 10 2001</code> through frame 6896 and <code>SEP 11 2001</code> from frame 6897 through 6991.</p></div>
     </div></section>
-    <section id="pattern"><div class="wrap">
-      <p class="kicker">Exploratory cryptographic review</p><h2>No recoverable code identified.</h2>
-      <div class="columns"><p>No defensible plaintext emerged from A1Z26/modulo-26, ASCII, modulo-128/256, digit-sum, time-component, parity-bit, Caesar, or single-byte XOR interpretations. Of 100 signed durations, 81 are unique; only the pair <code>5, 23</code> repeats, and no three-number sequence repeats.</p><p>The clear non-random feature is the destination second: 18 sustained jumps land at <code>:27</code>, including 13 of the first 30 events; another eight land at <code>:01</code>. Full-frame review shows those <code>:27</code> entries lead into different scenes, consistent with a recurring source-clip or edit anchor rather than a repeated visual symbol.</p><p>The absolute-gap modulo-26 index of coincidence is <code>0.0394</code>, close to the random-alphabet baseline <code>0.0385</code>. The four negative events occur at irregular indices 4, 48, 74, and 98. A strong cipher cannot be excluded without a key or known plaintext, but the durations provide no positive evidence of one.</p></div>
-    </div></section>
-    <section id="sustained"><div class="wrap">
-      <p class="kicker">Complete event ledger</p><h2>100 sustained discontinuities.</h2>
-      <p class="section-intro">For abrupt transitions, the boundary identifies the last old frame and first new frame. Cross-fades identify the last unblended old state, transition imagery, and first unblended new state. Red rules mark backward time.</p>
-      <div class="event-list">{event_cards('sustained', sustained_original, sustained_provo)}</div>
-    </div></section>
-    <section id="transient"><div class="wrap">
-      <p class="kicker">Momentary anomalies</p><h2>45 transient glitches.</h2>
-      <p class="section-intro">These clock values briefly move out of sequence and return. The evidence strips include the preceding frame, every anomalous frame, and the following frame. The set comprises 34 one-frame, nine two-frame, and two compound glitches.</p>
-      <div class="event-list">{event_cards('transient', transient_original, transient_provo)}</div>
-    </div></section>
     <section id="ampm"><div class="wrap">
       <p class="kicker">Independent meridiem audit</p><h2>Every frame classified.</h2>
       <p class="section-intro">All 6,998 decoded frames were separately evaluated for the AM/PM marker. The only meridiem changes occur at frames 593→594 and 6896→6897; the latter coincides with the SEP 10→SEP 11 date change. No transient AM/PM glitches were found.</p>
       <div class="audit-grid">{gallery}</div>
+    </div></section>
+    <section id="pattern"><div class="wrap">
+      <p class="kicker">Secondary analysis · exploratory only</p><h2>No recoverable code identified.</h2>
+      <div class="columns"><p>No defensible plaintext emerged from A1Z26/modulo-26, ASCII, modulo-128/256, digit-sum, time-component, parity-bit, Caesar, or single-byte XOR interpretations. Of 100 signed durations, 81 are unique; only the pair <code>5, 23</code> repeats, and no three-number sequence repeats.</p><p>The clear non-random feature is the destination second: 18 sustained jumps land at <code>:27</code>, including 13 of the first 30 events; another eight land at <code>:01</code>. Full-frame review shows those <code>:27</code> entries lead into different scenes, consistent with a recurring source-clip or edit anchor rather than a repeated visual symbol.</p><p>The absolute-gap modulo-26 index of coincidence is <code>0.0394</code>, close to the random-alphabet baseline <code>0.0385</code>. The four negative events occur at irregular indices 4, 48, 74, and 98. A strong cipher cannot be excluded without a key or known plaintext, but the durations provide no positive evidence of one.</p></div>
     </div></section>
   </main>
   <footer><div class="wrap"><p>Published July 15, 2026 · Source video: <code>Heavy_Pulp_-_Somewhere_in_Sedona_v38gk3.mp4</code></p><p>This page preserves the source-evidence distinction: PNG pixels show the embedded Sedona clock; Provo equivalents are calculated text.</p></div></footer>
