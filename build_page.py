@@ -252,7 +252,7 @@ page = f"""<!doctype html>
     </div>
   </header>
   <nav aria-label="Report sections"><div class="wrap">
-    <a href="#sustained">100 sustained jumps</a><a href="#transient">45 transient glitches</a><a href="#september11">9/11 timing</a><a href="timestamp_event_data.csv" download>Download CSV</a><a href="#finding">Totals</a><a href="#method">Method</a><a href="#timezone">Time zones</a><a href="#ampm">AM/PM audit</a><a href="#pattern">Pattern analysis</a>
+    <a href="#sustained">100 sustained jumps</a><a href="#transient">45 transient glitches</a><a href="#september11">9/11 timing</a><a href="timestamp_event_data.csv" download>Download CSV</a><a href="#finding">Totals</a><a href="#method">Method</a><a href="#timezone">Time zones</a><a href="#ampm">AM/PM audit</a>
   </div></nav>
   <main id="content">
     <section id="finding"><div class="wrap">
@@ -306,10 +306,6 @@ page = f"""<!doctype html>
       <p class="kicker">Independent meridiem audit</p><h2>Every frame classified.</h2>
       <p class="section-intro">All 6,998 decoded frames were separately evaluated for the AM/PM marker. The only meridiem changes occur at frames 593→594 and 6896→6897; the latter coincides with the SEP 10→SEP 11 date change. No transient AM/PM glitches were found.</p>
       <div class="audit-grid">{gallery}</div>
-    </div></section>
-    <section id="pattern"><div class="wrap">
-      <p class="kicker">Secondary analysis · exploratory only</p><h2>No recoverable code identified.</h2>
-      <div class="columns"><p>No defensible plaintext emerged from A1Z26/modulo-26, ASCII, modulo-128/256, digit-sum, time-component, parity-bit, Caesar, or single-byte XOR interpretations. Of 100 signed durations, 81 are unique; only the pair <code>5, 23</code> repeats, and no three-number sequence repeats.</p><p>The clear non-random feature is the destination second: 18 sustained jumps land at <code>:27</code>, including 13 of the first 30 events; another eight land at <code>:01</code>. Full-frame review shows those <code>:27</code> entries lead into different scenes, consistent with a recurring source-clip or edit anchor rather than a repeated visual symbol.</p><p>The absolute-gap modulo-26 index of coincidence is <code>0.0394</code>, close to the random-alphabet baseline <code>0.0385</code>. The four negative events occur at irregular indices 4, 48, 74, and 98. A strong cipher cannot be excluded without a key or known plaintext, but the durations provide no positive evidence of one.</p></div>
     </div></section>
   </main>
   <footer><div class="wrap"><p>Published July 15, 2026 · Source video: <code>Heavy_Pulp_-_Somewhere_in_Sedona_v38gk3.mp4</code></p><p>This page preserves the source-evidence distinction: PNG pixels show the embedded Sedona clock; Provo equivalents are calculated text.</p></div></footer>
