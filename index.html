@@ -79,6 +79,14 @@
     .audit-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem; }
     .audit-grid figure { margin: 0; padding: 1rem; background: var(--panel); border: 1px solid var(--line); overflow: auto; }
     .audit-grid img { width: 100%; min-width: 520px; height: auto; }
+    .relationship-cases { grid-template-columns: repeat(2, 1fr); margin-bottom: 2rem; }
+    .relationship-cases code { display: block; margin-top: .75rem; }
+    .evidence-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; }
+    .evidence-grid figure, .date-evidence { margin: 0; padding: 1rem; background: var(--panel); border: 1px solid var(--line); }
+    .evidence-grid img, .date-evidence img { width: 100%; height: auto; }
+    .date-evidence { margin-top: 1rem; }
+    .interpretive-limit { margin: 2rem 0 0; padding: 1.25rem; background: var(--panel); border-left: 4px solid var(--amber); }
+    .source-note { color: var(--muted); font: .72rem/1.6 var(--mono); }
     .method-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; padding: 0; list-style: none; background: var(--line); border: 1px solid var(--line); }
     .method-list li { padding: 1.4rem; background: var(--panel); }
     .method-list b { display: block; margin-bottom: .5rem; color: var(--amber); font: .7rem/1.2 var(--mono); text-transform: uppercase; }
@@ -91,6 +99,7 @@
       .strip { border-left: 0; border-top: 1px solid var(--line); }
       .callout, .method-list { grid-template-columns: 1fr; }
       .audit-grid { grid-template-columns: 1fr; }
+      .relationship-cases, .evidence-grid { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
@@ -111,7 +120,7 @@
     </div>
   </header>
   <nav aria-label="Report sections"><div class="wrap">
-    <a href="#sustained">100 sustained jumps</a><a href="#transient">45 transient glitches</a><a href="timestamp_event_data.csv" download>Download CSV</a><a href="#finding">Totals</a><a href="#method">Method</a><a href="#timezone">Time zones</a><a href="#ampm">AM/PM audit</a><a href="#pattern">Pattern analysis</a>
+    <a href="#sustained">100 sustained jumps</a><a href="#transient">45 transient glitches</a><a href="#september11">9/11 timing</a><a href="timestamp_event_data.csv" download>Download CSV</a><a href="#finding">Totals</a><a href="#method">Method</a><a href="#timezone">Time zones</a><a href="#ampm">AM/PM audit</a><a href="#pattern">Pattern analysis</a>
   </div></nav>
   <main id="content">
     <section id="finding"><div class="wrap">
@@ -3317,6 +3326,22 @@
           </article>
         </div>
     </div></section>
+    <section id="september11"><div class="wrap">
+      <p class="kicker">Temporal relationship · interpretive finding</p><h2>Two South Tower markers—under different clock assumptions.</h2>
+      <p class="section-intro">The footage contains two independent numerical correspondences with the official 9/11 timeline: the on-screen countdown resolves to 9:59 AM, the commemorative minute of the South Tower collapse, while the final date rollover converts to 9:03 AM Eastern, the minute Flight 175 struck the South Tower. The relationships are reproducible, but they do not use one consistent timezone model.</p>
+      <div class="evidence-grid">
+        <figure><a href="evidence/countdown_frame_3043.png"><img loading="lazy" width="720" height="528" src="evidence/countdown_frame_3043.png" alt="Frame 3043 showing 17 hours 59 minutes 56 seconds remaining and camera time 3:59:04 PM"></a><figcaption>Frame 3043 · <code>03:59:04 PM + 17:59:56 = 09:59:00 AM</code></figcaption></figure>
+        <figure><a href="evidence/countdown_frame_3073.png"><img loading="lazy" width="720" height="528" src="evidence/countdown_frame_3073.png" alt="Frame 3073 showing 17 hours 59 minutes 55 seconds remaining and camera time 3:59:05 PM"></a><figcaption>Frame 3073 · <code>03:59:05 PM + 17:59:55 = 09:59:00 AM</code></figcaption></figure>
+        <figure><a href="evidence/countdown_frame_3103.png"><img loading="lazy" width="720" height="528" src="evidence/countdown_frame_3103.png" alt="Frame 3103 showing 17 hours 59 minutes 54 seconds remaining and camera time 3:59:06 PM"></a><figcaption>Frame 3103 · <code>03:59:06 PM + 17:59:54 = 09:59:00 AM</code></figcaption></figure>
+      </div>
+      <ul class="method-list relationship-cases">
+        <li><b>Countdown: Eastern assumption required</b>At frames 3043, 3073, and 3103, the camera time increases as the CRT countdown decreases, preserving a zero point of September 11 at <code>09:59:00 AM</code>. This corresponds to the South Tower collapse only if the lower-right camera clock is assumed to be Eastern time—or if no timezone conversion is applied. If the camera clock is Sedona time, the endpoint is <code>09:59 AM MST / 12:59 PM EDT</code>, which is not an official 9/11 marker.</li>
+        <li><b>Date rollover: Sedona conversion</b>The only date change in 6,998 frames occurs at frames 6896→6897: <code>SEP 10 07:07:51 PM → SEP 11 06:03:45 AM</code>. Treating that destination as Sedona time and adding three hours produces <code>09:03:45 AM EDT</code>, the same minute as the South Tower impact. It is 34 seconds after the Commission time and 46 seconds after the NIST time.</li>
+      </ul>
+      <figure class="date-evidence"><a href="evidence/sustained_100_frames_6896_6897.png"><img loading="lazy" width="1448" height="327" src="evidence/sustained_100_frames_6896_6897.png" alt="Frames 6896 and 6897 showing the timestamp change from September 10 at 7:07:51 PM to September 11 at 6:03:45 AM"></a><figcaption>Final date rollover · Sedona <code>06:03:45 AM MST</code> converts to <code>09:03:45 AM EDT</code>.</figcaption></figure>
+      <p class="interpretive-limit"><b>Interpretive limit.</b> The countdown-to-collapse reading requires assuming the camera clock is Eastern. The final impact-time reading requires treating the later clock as Sedona time and converting it to Eastern. That inconsistency prevents a literal, timezone-coherent chronology; it is stronger evidence of an editorial or symbolic pairing than of a real-time countdown. The countdown close-up also begins immediately after sustained event #036 advances the embedded clock by 13 seconds.</p>
+      <p class="source-note">Official references: <a href="https://timeline.911memorial.org/timeline/10681">9/11 Memorial timeline</a> (9:03 and 9:59 commemorative markers); <a href="https://nvlpubs.nist.gov/nistpubs/Legacy/NCSTAR/ncstar1.pdf">NIST WTC investigation</a> (9:02:59 impact); <a href="https://www.govinfo.gov/content/pkg/GPO-911REPORT/pdf/GPO-911REPORT.pdf">9/11 Commission Report</a> (9:03:11 impact and 9:58:59 collapse).</p>
+    </div></section>
     <section id="method"><div class="wrap">
       <p class="kicker">Method and controls</p><h2>Frame-level review and verification.</h2>
       <p class="section-intro">The 720×528 H.264 source contains 6,998 frames at a constant 30 fps. Candidate changes were located through temporal differencing in the lower-right timestamp region; the displayed values were then read by direct visual inspection.</p>
@@ -3349,5 +3374,6 @@
     </div></section>
   </main>
   <footer><div class="wrap"><p>Published July 15, 2026 · Source video: <code>Heavy_Pulp_-_Somewhere_in_Sedona_v38gk3.mp4</code></p><p>This page preserves the source-evidence distinction: PNG pixels show the embedded Sedona clock; Provo equivalents are calculated text.</p></div></footer>
+  <script>addEventListener("load", () => location.hash && document.getElementById(location.hash.slice(1))?.scrollIntoView());</script>
 </body>
 </html>
