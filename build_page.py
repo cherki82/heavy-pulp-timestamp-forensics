@@ -102,12 +102,12 @@ page = f"""<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07100e">
   <meta name="description" content="Frame-by-frame forensic analysis of 100 sustained timestamp discontinuities and 45 transient glitches in Heavy Pulp — Somewhere in Sedona.">
-  <meta property="og:title" content="The Missing 19:08:16 — Heavy Pulp timestamp forensics">
-  <meta property="og:description" content="6,998 frames examined. 145 timestamp anomalies documented with 363 source-matched evidence panels.">
+  <meta property="og:title" content="Timestamp Discontinuity Analysis — Heavy Pulp">
+  <meta property="og:description" content="Frame-by-frame analysis of 6,998 frames, documenting 100 sustained timestamp discontinuities and 45 transient out-of-sequence readings.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cherki82.github.io/heavy-pulp-timestamp-forensics/">
   <meta property="og:image" content="https://cherki82.github.io/heavy-pulp-timestamp-forensics/evidence/ampm_transition_evidence.png">
-  <title>The Missing 19:08:16 — Heavy Pulp timestamp forensics</title>
+  <title>Timestamp Discontinuity Analysis — Heavy Pulp</title>
   <style>
     :root {{
       --ink: #e6ece4;
@@ -133,10 +133,9 @@ page = f"""<!doctype html>
     .skip {{ position: absolute; left: -9999px; }}
     .skip:focus {{ left: 1rem; top: 1rem; z-index: 10; padding: .75rem 1rem; background: var(--amber); color: #111; }}
     .wrap {{ width: min(1180px, calc(100% - 2rem)); margin-inline: auto; }}
-    header {{ min-height: 92vh; display: grid; align-items: end; padding: 7rem 0 4rem; border-bottom: 1px solid var(--line); }}
+    header {{ padding: 5rem 0 3rem; border-bottom: 1px solid var(--line); }}
     .kicker, .event__eyebrow {{ margin: 0; color: var(--amber); font: 700 .72rem/1.2 var(--mono); letter-spacing: .18em; text-transform: uppercase; }}
-    h1 {{ max-width: 12ch; margin: .5rem 0 2rem; font-size: clamp(3.4rem, 10vw, 8.8rem); font-weight: 500; letter-spacing: -.065em; line-height: .84; }}
-    h1 em {{ color: var(--green); font-style: normal; white-space: nowrap; }}
+    h1 {{ max-width: 16ch; margin: .6rem 0 1.4rem; font-size: clamp(2.8rem, 7vw, 6.5rem); font-weight: 500; letter-spacing: -.055em; line-height: .9; }}
     .lede {{ max-width: 720px; font-size: clamp(1.2rem, 2.1vw, 1.65rem); color: #c7d1cb; }}
     .hero-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 3rem; background: var(--line); border: 1px solid var(--line); }}
     .metric {{ min-height: 130px; padding: 1.2rem; background: rgba(7,16,14,.95); }}
@@ -197,14 +196,14 @@ page = f"""<!doctype html>
   <a class="skip" href="#content">Skip to report</a>
   <header>
     <div class="wrap">
-      <p class="kicker">Frame-by-frame timestamp forensics · 6,998 decoded frames</p>
-      <h1>The missing <em>19:08:16</em></h1>
-      <p class="lede">A forensic accounting of every sustained timestamp jump and momentary clock glitch in <cite>Heavy Pulp — Somewhere in Sedona</cite>, with source-frame evidence and a historical Provo, Utah time conversion.</p>
+      <p class="kicker">Forensic timestamp report · <cite>Heavy Pulp — Somewhere in Sedona</cite></p>
+      <h1>Timestamp discontinuity analysis</h1>
+      <p class="lede">Frame-by-frame examination of 6,998 decoded frames identified 100 sustained clock discontinuities and 45 transient out-of-sequence readings. Each event is linked to source-frame evidence; Provo equivalents apply a one-hour historical time-zone conversion.</p>
       <div class="hero-grid" aria-label="Report summary">
+        <div class="metric"><strong>6,998</strong><span>frames examined</span></div>
         <div class="metric"><strong>100</strong><span>sustained discontinuities</span></div>
-        <div class="metric"><strong>45</strong><span>transient glitches</span></div>
-        <div class="metric"><strong>363</strong><span>source-matched panels</span></div>
-        <div class="metric"><strong>68,896</strong><span>net signed seconds</span></div>
+        <div class="metric"><strong>45</strong><span>transient readings</span></div>
+        <div class="metric"><strong>+68,896</strong><span>net signed seconds</span></div>
       </div>
     </div>
   </header>
@@ -213,12 +212,12 @@ page = f"""<!doctype html>
   </div></nav>
   <main id="content">
     <section id="finding"><div class="wrap">
-      <p class="kicker">Central finding</p><h2>Nearly a day compressed into minutes.</h2>
+      <p class="kicker">Calculated result</p><h2>Net signed discontinuity: 68,896 seconds.</h2>
       <div class="callout"><strong>+68,896s</strong><div><p>Positive sustained gaps total <code>+108,400 seconds</code>. Four backward jumps total <code>−39,504 seconds</code>. Applying the requested signed convention yields <code>+68,896 seconds</code>, or <code>19:08:16</code>.</p><p>This is a discontinuity total derived from displayed timestamps. It is not, by itself, proof that exactly the same duration of original recording was physically removed.</p></div></div>
       <div class="downloads"><a class="button" href="reports/timestamp_forensic_report.md">Original Sedona-time report</a><a class="button" href="reports/timestamp_forensic_report_provo_ut.md">Provo-time duplicate</a><a class="button" href="evidence/ampm_frame_audit.txt">6,998-frame AM/PM ledger</a></div>
     </div></section>
     <section id="method"><div class="wrap">
-      <p class="kicker">Method and controls</p><h2>Read from pixels, not OCR.</h2>
+      <p class="kicker">Method and controls</p><h2>Frame-level review and verification.</h2>
       <p class="section-intro">The 720×528 H.264 source contains 6,998 frames at a constant 30 fps. Candidate changes were located through temporal differencing in the lower-right timestamp region; the displayed values were then read by direct visual inspection.</p>
       <ul class="method-list">
         <li><b>Frame convention</b>Zero-based frame numbers. Video time equals frame ÷ 30.</li>
@@ -230,11 +229,11 @@ page = f"""<!doctype html>
       </ul>
     </div></section>
     <section id="timezone"><div class="wrap">
-      <p class="kicker">Historical local time</p><h2>Sedona → Provo: add one hour.</h2>
+      <p class="kicker">Historical local time</p><h2>Provo conversion: add one hour.</h2>
       <div class="columns"><p>For September 10–11, 2001, Sedona used Mountain Standard Time (<code>UTC−07:00</code>) while Provo observed Mountain Daylight Time (<code>UTC−06:00</code>). Every camera-clock value therefore moves forward exactly one hour.</p><p>Frame numbers, elapsed video positions, event order, classifications, and signed gaps do not change. The evidence images remain immutable source extractions and display the original Sedona time; each card supplies the Provo equivalent in amber.</p><p>The source date reads <code>SEP 10 2001</code> through frame 6896 and <code>SEP 11 2001</code> from frame 6897 through 6991.</p></div>
     </div></section>
     <section id="pattern"><div class="wrap">
-      <p class="kicker">Exploratory cryptographic review</p><h2>An editing signature, not a recovered code.</h2>
+      <p class="kicker">Exploratory cryptographic review</p><h2>No recoverable code identified.</h2>
       <div class="columns"><p>No defensible plaintext emerged from A1Z26/modulo-26, ASCII, modulo-128/256, digit-sum, time-component, parity-bit, Caesar, or single-byte XOR interpretations. Of 100 signed durations, 81 are unique; only the pair <code>5, 23</code> repeats, and no three-number sequence repeats.</p><p>The clear non-random feature is the destination second: 18 sustained jumps land at <code>:27</code>, including 13 of the first 30 events; another eight land at <code>:01</code>. Full-frame review shows those <code>:27</code> entries lead into different scenes, consistent with a recurring source-clip or edit anchor rather than a repeated visual symbol.</p><p>The absolute-gap modulo-26 index of coincidence is <code>0.0394</code>, close to the random-alphabet baseline <code>0.0385</code>. The four negative events occur at irregular indices 4, 48, 74, and 98. A strong cipher cannot be excluded without a key or known plaintext, but the durations provide no positive evidence of one.</p></div>
     </div></section>
     <section id="sustained"><div class="wrap">
